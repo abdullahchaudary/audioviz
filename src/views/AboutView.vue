@@ -1,6 +1,6 @@
 <template>
   <div class="about">
-    <div class="container text-center">
+    <div class="container text-center p-2">
       <h1 class="text-4xl tracking-wide">About AudioViz</h1>
       <p class="text-xl leading-loose tracking-wide">
         <br>

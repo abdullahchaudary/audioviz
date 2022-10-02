@@ -20,14 +20,23 @@ class Mic {
         let normSamples = [...this.dataArray].map(e => e/128 -1);
         return normSamples;
     }
+    getSamplesF = () => {
+        this.analyzer.getByteFrequencyData(this.dataArray);
+        // let normSamples = [...this.dataArray].map(e => e/128 -1);
+        // let normSamples = [...this.dataArray].map(e => e/128);
+        let normSamples = [...this.dataArray].map(e => e/128);
+        // console.log(normSamples);
+        return normSamples;
+    }
     getVol = () =>{
-        this.analyzer.getByteTimeDomainData(this.dataArray);
+        this.analyzer.getByteFrequencyData(this.dataArray);
         let normSamples = [...this.dataArray].map(e => e/128 -1);
         let sum = 0;
         for(let i=0; i<normSamples.length; i++){
             sum += normSamples[i] * normSamples[i];
         }
         let vol = Math.sqrt(sum/normSamples.length);
+        // let vol = sum/normSamples.length;
         return vol;
     }
 }
@@ -41,15 +50,28 @@ class Shape {
         this.color = color;
         this.index = idx;
     }
-    update = (micInput) => {
+    update = (micInput, mode) => {
         const vol = micInput;
-        if(vol > this.height){
-            this.height = vol;
-        } else {
-            this.height -= this.height * 0.08;
+        switch(mode){
+            case 1:
+                if(vol > this.height){
+                    this.height = vol;
+                } else {
+                    this.height -= this.height * 0.080;
+                }
+                break;
+            case 2:
+                if(vol > this.height){
+                    this.height = vol;
+                } else {
+                    this.height -= this.height * 0.0480;
+                }
+                break;
+            default:
+                break;
         }
     }
-    draw = (ctx, mode, vol, ch, cw) => {
+    draw = (ctx, mode, vol, ch, cw, fftSizeVal) => {
         switch(mode){
             case 'mode1':
                 ctx.fillStyle = this.color;
@@ -209,7 +231,7 @@ class Shape {
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*Math.PI*8/256);
+                ctx.rotate(this.index*Math.PI*8/(fftSizeVal/2));
                 ctx.scale(1+vol*0.5,1+vol*0.5);
                 ctx.fillRect(20, 20, this.width, this.height);
                 ctx.restore();
@@ -218,7 +240,7 @@ class Shape {
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index+Math.PI*8/256);
+                ctx.rotate(this.index+Math.PI*8/(fftSizeVal/2));
                 ctx.scale(1+vol*0.5,1+vol*0.5);
                 ctx.fillRect(10, 10, this.width, this.height);
                 ctx.restore();
@@ -227,7 +249,7 @@ class Shape {
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*Math.PI*2/256);
+                ctx.rotate(this.index*Math.PI*2/(fftSizeVal/2));
                 ctx.scale(1+vol*0.8,1+vol*0.8);
                 ctx.fillRect(100, 10, this.width, this.height);
                 ctx.restore();
@@ -236,7 +258,7 @@ class Shape {
                 ctx.save();
                 ctx.fillStyle = this.color;
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*120/256);
+                ctx.rotate(this.index*120/(fftSizeVal/2));
                 ctx.scale(1+vol*0.8,1+vol*0.8);
                 ctx.fillRect(10, 100, this.width, this.height);
                 ctx.restore();
@@ -247,7 +269,7 @@ class Shape {
                 sprite1.src = img641;
                 ctx.save();
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*6/256);
+                ctx.rotate(this.index*6/(fftSizeVal/2));
                 ctx.drawImage(sprite1, 0, this.index+((this.height/2)/3), this.height/2.5, this.height/2.5);
                 ctx.restore();
                 ctx.drawImage(sprite1, (cw/2)-85, (ch/2)-85, this.height/3+170, this.height/3+170);
@@ -258,7 +280,7 @@ class Shape {
                 sprite2.src = img642;
                 ctx.save();
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*8/256);
+                ctx.rotate(this.index*8/(fftSizeVal/2));
                 ctx.drawImage(sprite2, 0, this.index+((this.height/2)/3), this.height/2.5, this.height/2.5);
                 ctx.restore();
                 ctx.drawImage(sprite2, (cw/2)-85, (ch/2)-85, this.height/5+170, this.height/5+170);
@@ -269,7 +291,7 @@ class Shape {
                 sprite3.src = img643;
                 ctx.save();
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*12/256);
+                ctx.rotate(this.index*12/(fftSizeVal/2));
                 ctx.drawImage(sprite3, 0, this.index+((this.height/2)/3), this.height/2.5, this.height/2.5);
                 ctx.restore();
                 ctx.drawImage(sprite3, (cw/2)-85, (ch/2)-85, this.height/4+170, this.height/4+170);
@@ -278,7 +300,7 @@ class Shape {
                 ctx.save();
                 ctx.strokeStyle = this.color;
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*256/1.2);
+                ctx.rotate(this.index*(fftSizeVal/2)/1.2);
                 ctx.lineWidth = this.height/7;
                 ctx.beginPath();
                 ctx.moveTo(0,this.height/1.1);
@@ -290,7 +312,7 @@ class Shape {
                 ctx.save();
                 ctx.strokeStyle = this.color;
                 ctx.translate(cw/2,ch/2);
-                ctx.rotate(this.index*256/2);
+                ctx.rotate(this.index*(fftSizeVal/2)/2);
                 ctx.lineWidth = this.height/7;
                 ctx.lineCap = 'round';
                 // ctx.shadowOffsetX = 0;
@@ -344,16 +366,19 @@ export default class Visualizer {
     constructor(cnvs){
         this.mic = new Mic();
         this.canvas = cnvs;
+        this.fftSizeVal = 512;
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.shapeWidth = this.canvas.width/256;
-        this.shapeWidthPass = this.canvas.width/256;
+        this.shapeWidth = this.canvas.width/(this.fftSizeVal/2);
+        this.shapeWidthPass = this.canvas.width/(this.fftSizeVal/2);
         this.shapes = [];
         this.boost = 1000;
+        this.extBoost = 0;
         this.vizMode = 'mode1';
         this.startPos = this.canvas.height/2;
         this.running = true;
+        this.updateMode = 1;
         this.createShapes(1);
         this.animate();
         // this.vizOpts('mode15');
@@ -368,7 +393,8 @@ export default class Visualizer {
                 this.vizMode = 'mode1';
                 this.startPos = this.canvas.height/2;
                 this.boost = 1000;
-                this.createShapes(1);
+                this.createShapes(5);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode2':
@@ -376,6 +402,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode3':
@@ -383,6 +410,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode4':
@@ -390,12 +418,14 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 2000;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
             case 'mode5':
                 this.vizMode = 'mode5';
                 this.startPos = this.canvas.height;
                 this.boost = 1500;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode6':
@@ -403,6 +433,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 2000;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode7':
@@ -410,6 +441,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1500;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode8':
@@ -417,6 +449,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1800;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode9':
@@ -424,6 +457,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1800;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode10':
@@ -431,6 +465,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1800;
                 this.createShapes(2);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode11':
@@ -438,6 +473,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1800;
                 this.createShapes(2);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode12':
@@ -445,6 +481,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1800;
                 this.createShapes(2);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode13':
@@ -452,6 +489,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1800;
                 this.createShapes(2);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode14':
@@ -459,6 +497,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1500;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode15':
@@ -466,6 +505,7 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1800;
                 this.createShapes(1);
+                this.updateMode = 1;
                 // this.animate();
                 break;
             case 'mode16':
@@ -473,73 +513,85 @@ export default class Visualizer {
                 this.startPos = this.canvas.height;
                 this.boost = 1500;
                 this.createShapes(1);
+                this.updateMode = 1;
                 break;
             case 'mode17':
                 this.vizMode = 'mode17';
                 this.startPos = this.canvas.height;
                 this.boost = 1500;
                 this.createShapes(1);
+                this.updateMode = 1;
                 break;
             case 'mode18':
                 this.vizMode = 'mode18';
                 this.startPos = this.canvas.height;
                 this.boost = 1500;
                 this.createShapes(1);
+                this.updateMode = 1;
                 break;
             case 'mode19':
                 this.vizMode = 'mode19';
                 this.startPos = this.canvas.height;
                 this.boost = 1500;
                 this.createShapes(1);
+                this.updateMode = 1;
                 break;
             case 'mode20':
                 this.vizMode = 'mode20';
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(4);
+                this.updateMode = 2;
                 break;
             case 'mode21':
                 this.vizMode = 'mode21';
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(4);
+                this.updateMode = 2;
                 break;
             case 'mode22':
                 this.vizMode = 'mode22';
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(4);
+                this.updateMode = 2;
                 break;
             case 'mode23':
                 this.vizMode = 'mode23';
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(4);
+                this.updateMode = 2;
                 break;
             case 'mode24':
                 this.vizMode = 'mode24';
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(4);
+                this.updateMode = 2;
                 break;
             case 'mode25':
                 this.vizMode = 'mode25';
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(4);
+                this.updateMode = 2;
                 break;
             case 'mode26':
                 this.vizMode = 'mode26';
                 this.startPos = this.canvas.height;
                 this.boost = 1000;
                 this.createShapes(4);
+                this.updateMode = 2;
                 break;
             default:
                 break;
         }
     }
     createShapes = (m) => {
-        for(let i=0; i<256; i++){
+        for(let i=0; i<(this.fftSizeVal/2); i++){
+            // let color = 'hsl('+ i*2 +', 100%, 50%)';
             let color = 'hsl('+ i +', 100%, 50%)';
             switch(m){
                 case 1:
@@ -558,6 +610,10 @@ export default class Visualizer {
                     this.shapes.push(new Shape(0, i*2, this.shapeWidthPass, 100, color, i));
                     i+=2;
                     break;
+                case 5:
+                    this.shapes.push(new Shape(i * this.shapeWidth, this.startPos, this.shapeWidthPass, 100, color, i));
+                    i+=2;
+                    break;
                 default:
                     break;
             }
@@ -568,11 +624,16 @@ export default class Visualizer {
             if(this.mic){
                 if(this.mic.init){
                     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    const samples = this.mic.getSamples();
+                    const samples = this.mic.getSamplesF();
                     const vol = this.mic.getVol();
                     this.shapes.forEach((shape, i)=>{
-                        shape.update(samples[i] * this.boost);
-                        shape.draw(this.ctx, this.vizMode, vol, this.canvas.height, this.canvas.width);
+                        // if(i<40){
+                        //     shape.update((samples[i]-0.8) * (this.boost+this.extBoost),this.updateMode);
+                        //     shape.draw(this.ctx, this.vizMode, vol, this.canvas.height, this.canvas.width,this.fftSizeVal);
+                        // }else{
+                            shape.update((samples[i] + i/256-1) * (this.boost+this.extBoost),this.updateMode);
+                            shape.draw(this.ctx, this.vizMode, vol, this.canvas.height, this.canvas.width,this.fftSizeVal);
+                        // }
                     });
         
                 }
