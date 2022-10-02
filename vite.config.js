@@ -11,8 +11,14 @@ export default defineConfig({
     vue(), 
     vueJsx(), 
     VitePWA({
+      injectRegister: 'auto',
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192x192.png', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['icon-192x192.png', 'apple-touch-icon.png', 'masked-icon.svg', 'icon-256x256.png', 'icon-384x384.png', 'icon-512x512.png'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+        clientsClaim: true,
+        skipWaiting: true
+      },
       manifest: {
         name: 'AudioViz',
         short_name: 'AudioViz',
@@ -22,39 +28,33 @@ export default defineConfig({
         display: 'fullscreen',
         icons: [
           {
-            src: 'icon-192x192.png',
+            src: '/assets/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'icon-256x256.png',
+            src: '/assets/icon-256x256.png',
             sizes: '256x256',
             type: 'image/png'
           },
           {
-            src: 'icon-384x384.png',
+            src: '/assets/icon-384x384.png',
             sizes: '384x384',
             type: 'image/png'
           },
           {
-            src: 'icon-512x512.png',
+            src: '/assets/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: 'masked-icon.svg',
+            src: '/assets/masked-icon.svg',
             sizes: '512x512',
             type: 'image/svg',
             purpose: 'maskable'
           }
         ]
       },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
-        clientsClaim: true,
-        skipWaiting: true
-      },
-      injectRegister: 'inline',
       devOptions: {
         enabled: true
       }
